@@ -1,3 +1,4 @@
+import requests
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup 
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 import random
@@ -103,6 +104,32 @@ trivia_questions_by_mood = {
         ]
     }
 }
+
+async def make_http_request(url: str) -> dict:
+    """Realiza una solicitud HTTP GET a la URL proporcionada y retorna la respuesta en formato JSON."""
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Lanza un error si la solicitud falló
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error al realizar la solicitud HTTP: {e}")
+        return {}
+
+async def handle_http_request(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Maneja una solicitud HTTP y envía el resultado al usuario."""
+    user_id = update.message.from_user.id
+    url = 'https://api.example.com/data'  # Reemplaza con la URL de la API que deseas consultar
+
+    # Realiza la solicitud HTTP
+    data = await make_http_request(url)
+
+    # Procesa la respuesta
+    if data:
+        message = f"Datos recibidos: {data}"  # Procesa y formatea los datos según sea necesario
+    else:
+        message = "No se pudieron obtener datos."
+
+    await update.message.reply_text(message)
 
 
 def remove_accents(text: str) -> str:
@@ -452,6 +479,7 @@ def main() -> None:
     application.add_handler(CommandHandler('inicio', handle_inicio))
     application.add_handler(CallbackQueryHandler(button))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, answer))
+    application.add_handler(MessageHandler(filters.TEXT & filters.Regex("Consultar API"), handle_http_request))
     application.run_polling()
 
 if __name__ == '__main__':
