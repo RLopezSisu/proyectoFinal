@@ -4,7 +4,6 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 import random
 import unicodedata 
 import pokebase as pb
-TOKEN = '7240822627:AAHRBOmJvuE6v5WUoWYF5nG3huLw-e1q9ZE'
 
 
 products = [ 
